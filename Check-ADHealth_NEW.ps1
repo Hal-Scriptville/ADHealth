@@ -103,6 +103,30 @@ try {
     Handle-Error $_.Exception.Message
 }
 
+# Collect Forest and Domain Functional Levels
+
+try {
+    $forestLevel = (Get-ADForest).ForestMode
+    $domainLevel = (Get-ADDomain).DomainMode
+    $functionalLevelsPath = Join-Path -Path $orgDir -ChildPath "FunctionalLevels.txt"
+    "Forest Functional Level: $forestLevel`nDomain Functional Level: $domainLevel" | Out-File -FilePath $functionalLevelsPath
+    Write-Log "Functional levels collected and written to $functionalLevelsPath"
+} catch {
+    Handle-Error $_.Exception.Message
+}
+
+# Collect Active Directory Schema Version
+
+try {
+    $schema = Get-ADObject (Get-ADRootDSE).schemaNamingContext -Property objectVersion
+    $schemaVersion = $schema.objectVersion
+    $schemaVersionPath = Join-Path -Path $orgDir -ChildPath "SchemaVersion.txt"
+    "Active Directory Schema Version: $schemaVersion" | Out-File -FilePath $schemaVersionPath
+    Write-Log "Schema version collected and written to $schemaVersionPath"
+} catch {
+    Handle-Error $_.Exception.Message
+}
+
 # Operations for each Domain Controller
 foreach ($DC in $DCs) {
     $dcPath = Join-Path -Path $orgDir -ChildPath ($DC.Name -replace "[^a-zA-Z0-9]", "_")
